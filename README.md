@@ -5,8 +5,12 @@
 **AXIOM** is a world-class AI SaaS parent operating system that connects three independent AI platforms into a unified personal and professional development lifecycle:
 
 1. **📚 GNOSIS AI** (`Learn & Research`) — Multi-document vector search, PDF summaries, and cognitive study workspaces.
+   - *Tool Repository:* [jeedijoshua-art/memora](https://github.com/jeedijoshua-art/memora)
 2. **⚡ NODECRAFT AI** (`Build & Automate`) — An interactive visual drag-and-drop workspace canvas to configure and chain AI agent nodes with zero coding.
+   - *Tool Repository:* [jeedijoshua-art/flowforgeai](https://github.com/jeedijoshua-art/flowforgeai)
 3. **💼 CAREEROS** (`Showcase & Get Hired`) — An AI-powered placement suite to optimize cover letters, resume ATS alignment, and format portfolio items.
+   - *Tool Repository:* [jeedijoshua-art/careeros](https://github.com/jeedijoshua-art/careeros)
+
 
 ```
        [ DOCUMENTS ]
