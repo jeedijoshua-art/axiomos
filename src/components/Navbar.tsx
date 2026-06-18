@@ -1,14 +1,38 @@
 "use client";
-
+ 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowUpRight, Terminal, Menu, X, Sparkles } from 'lucide-react';
-
+import { ArrowUpRight, Terminal, Menu, X, Sparkles, Sun, Moon } from 'lucide-react';
+ 
 export const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const pathname = usePathname();
+ 
+  useEffect(() => {
+    // Check localStorage or system preference
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const initialTheme = savedTheme || 'dark';
+    setTheme(initialTheme);
+    if (initialTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +82,7 @@ export const Navbar: React.FC = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${
         scrolled 
-          ? 'py-3 bg-black/60 backdrop-blur-xl border-b border-white/5' 
+          ? 'py-3 glass-navbar shadow-lg' 
           : 'py-5 bg-transparent border-b border-transparent'
       }`}
     >
@@ -90,24 +114,33 @@ export const Navbar: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="hidden md:flex items-center gap-4">
-          <Link 
-            href="/dashboard" 
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200 px-3 py-2"
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-white/5 bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer mr-1"
+            aria-label="Toggle theme"
           >
-            Sign In
-          </Link>
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+
           <Link 
             href="/dashboard"
-            className="group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg text-xs font-semibold tracking-wide uppercase transition-all duration-300 active:scale-95 bg-white text-black hover:bg-slate-200 shadow-md shadow-white/5 h-9 px-4 overflow-hidden"
+            className="group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg text-xs font-semibold tracking-wide uppercase transition-all duration-300 active:scale-95 bg-foreground text-background hover:opacity-90 shadow-md shadow-white/5 h-9 px-4 overflow-hidden"
           >
             <Sparkles className="h-3.5 w-3.5 animate-pulse text-axiom-purple" />
-            <span>Launch Platform</span>
+            <span className="keep-white">Launch Platform</span>
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-slate-500" />
           </Link>
         </div>
 
         {/* Mobile menu toggle */}
-        <div className="md:hidden flex items-center gap-3">
+        <div className="md:hidden flex items-center gap-2.5">
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-lg border border-white/5 bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <Link 
             href="/dashboard"
             className="inline-flex items-center justify-center rounded-lg text-xs font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10 h-8 px-3"
@@ -141,20 +174,14 @@ export const Navbar: React.FC = () => {
           </nav>
           <div className="h-px bg-white/5 my-1" />
           <div className="flex flex-col gap-3">
+
             <Link 
               href="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full inline-flex items-center justify-center text-sm font-semibold border border-white/10 text-white rounded-lg h-10 hover:bg-white/5 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link 
-              href="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full inline-flex items-center justify-center gap-1 text-sm font-semibold bg-white text-black rounded-lg h-10 hover:bg-slate-200 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1 text-sm font-semibold bg-foreground text-background rounded-lg h-10 hover:opacity-90 transition-colors"
             >
               <Sparkles className="h-4 w-4 text-axiom-purple" />
-              <span>Launch Platform</span>
+              <span className="keep-white">Launch Platform</span>
               <ArrowUpRight className="h-4 w-4 text-slate-500" />
             </Link>
           </div>

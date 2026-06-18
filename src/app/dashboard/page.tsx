@@ -12,7 +12,7 @@ import {
   Layers, Brain, Zap, Briefcase, Network, 
   HelpCircle, Menu, X, ArrowUpRight, Play, Save, Plus, Trash2, 
   Search, FileText, CheckCircle2, RefreshCw, BarChart2, BookOpen,
-  FolderPlus, Star, ShieldAlert, Cpu, Rocket
+  FolderPlus, Star, ShieldAlert, Cpu, Rocket, Sun, Moon
 } from 'lucide-react';
 import EcosystemBackground from '@/components/EcosystemBackground';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -95,6 +95,7 @@ function Dashboard() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   // Sync state from query parameters
   useEffect(() => {
@@ -103,6 +104,29 @@ function Dashboard() {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  // Initialize theme from localStorage on client mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const initialTheme = savedTheme || 'dark';
+    setTheme(initialTheme);
+    if (initialTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+  };
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -404,24 +428,56 @@ function Dashboard() {
         <main className="flex-1 overflow-y-auto bg-slate-950/40 p-6 md:p-10 flex flex-col">
           
           {/* Header/Title block */}
-          <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
-            <div>
-              <span className="text-[10px] font-bold text-axiom-purple uppercase font-mono tracking-wider">Workspace Node</span>
-              <h1 className="text-2xl font-black text-white tracking-tight uppercase">
-                {activeTab === 'overview' && 'System Overview'}
-                {activeTab === 'gnosis' && 'Gnosis AI'}
-                {activeTab === 'nodecraft' && 'NodeCraft Studio'}
-                {activeTab === 'careeros' && 'CareerOS Growth'}
-                {activeTab === 'guide' && 'Workflow Orchestration'}
-              </h1>
+          <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4 flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className={`p-2 rounded-lg border transition-colors flex items-center justify-center cursor-pointer ${
+                  theme === 'light' ? 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700' : 'bg-white/5 hover:bg-white/10 border-white/5 text-slate-400 hover:text-white'
+                }`}
+                title={sidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
+                aria-label="Toggle sidebar"
+              >
+                {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+              <div>
+                <span className="text-[10px] font-bold text-axiom-purple uppercase font-mono tracking-wider">Workspace Node</span>
+                <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+                  {activeTab === 'overview' && 'System Overview'}
+                  {activeTab === 'gnosis' && 'Gnosis AI'}
+                  {activeTab === 'nodecraft' && 'NodeCraft Studio'}
+                  {activeTab === 'careeros' && 'CareerOS Growth'}
+                  {activeTab === 'guide' && 'Workflow Orchestration'}
+                </h1>
+              </div>
             </div>
-            <Link 
-              href="/"
-              className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
-            >
-              <span>Back to Landing</span>
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-4">
+              {/* Dark/Light Switch */}
+              <button
+                onClick={toggleTheme}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full border transition-colors focus:outline-none cursor-pointer ${
+                  theme === 'light' ? 'bg-slate-200 border-slate-300' : 'bg-white/5 border-white/10'
+                }`}
+                aria-label="Toggle theme"
+                title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+              >
+                <span
+                  className={`${
+                    theme === 'light' ? 'translate-x-7 bg-slate-900 text-white' : 'translate-x-1 bg-white text-slate-900'
+                  } inline-flex h-6 w-6 transform items-center justify-center rounded-full shadow-md transition-transform duration-300`}
+                >
+                  {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+                </span>
+              </button>
+
+              <Link 
+                href="/"
+                className="text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
+              >
+                <span>Back to Landing</span>
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
 
           {/* DYNAMIC SUB-VIEW TEMPLATE RENDER */}

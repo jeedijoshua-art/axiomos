@@ -104,6 +104,21 @@ export const EcosystemBackground: React.FC = () => {
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.1;
       mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.1;
 
+      // Parallax updates for HTML orbs
+      if (containerRef.current) {
+        const orbs = containerRef.current.querySelectorAll('.aurora-orb');
+        const scrollVal = scrollRef.current.current;
+        const mouseX = mouseRef.current.x > 0 ? (mouseRef.current.x - w / 2) * 0.02 : 0;
+        const mouseY = mouseRef.current.x > 0 ? (mouseRef.current.y - h / 2) * 0.02 : 0;
+        
+        orbs.forEach((orb, index) => {
+          const depth = (index + 1) * 0.4;
+          const scrollOffset = scrollVal * depth * 0.12;
+          const htmlOrb = orb as HTMLElement;
+          htmlOrb.style.transform = `translate3d(${mouseX * depth}px, ${mouseY * depth - scrollOffset}px, 0)`;
+        });
+      }
+
       // Draw connections first
       for (let i = 0; i < particles.length; i++) {
         const p1 = particles[i];
@@ -122,12 +137,20 @@ export const EcosystemBackground: React.FC = () => {
 
           // Connect particles close to each other
           if (dist < 120) {
-            const alpha = (1 - dist / 120) * 0.08 * p1.depth;
+            const alpha = (1 - dist / 120) * 0.09 * p1.depth;
             ctx.beginPath();
             ctx.moveTo(p1.x, p1Y);
             ctx.lineTo(p2.x, p2Y);
-            ctx.strokeStyle = `rgba(139, 92, 246, ${alpha})`;
-            ctx.lineWidth = 0.5 * p1.depth;
+            
+            // Neon gradient link
+            const grad = ctx.createLinearGradient(p1.x, p1Y, p2.x, p2Y);
+            const color1 = p1.color.includes('139') ? '#8b5cf6' : p1.color.includes('6') ? '#06b6d4' : '#10b981';
+            const color2 = p2.color.includes('139') ? '#8b5cf6' : p2.color.includes('6') ? '#06b6d4' : '#10b981';
+            grad.addColorStop(0, `rgba(${color1 === '#8b5cf6' ? '139, 92, 246' : color1 === '#06b6d4' ? '6, 182, 212' : '16, 185, 129'}, ${alpha})`);
+            grad.addColorStop(1, `rgba(${color2 === '#8b5cf6' ? '139, 92, 246' : color2 === '#06b6d4' ? '6, 182, 212' : '16, 185, 129'}, ${alpha})`);
+            
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 0.6 * p1.depth;
             ctx.stroke();
           }
         }
@@ -139,7 +162,7 @@ export const EcosystemBackground: React.FC = () => {
           const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
 
           if (distMouse < 160) {
-            const alpha = (1 - distMouse / 160) * 0.15;
+            const alpha = (1 - distMouse / 160) * 0.16;
             ctx.beginPath();
             ctx.moveTo(p1.x, p1Y);
             ctx.lineTo(mouseRef.current.x, mouseRef.current.y);
@@ -149,8 +172,8 @@ export const EcosystemBackground: React.FC = () => {
 
             // Subtle mouse force (attraction/repulsion based on node speed)
             const force = (160 - distMouse) / 160;
-            p1.x += (dxMouse / distMouse) * force * 0.5;
-            p1.y += (dyMouse / distMouse) * force * 0.5;
+            p1.x += (dxMouse / distMouse) * force * 0.4;
+            p1.y += (dyMouse / distMouse) * force * 0.4;
           }
         }
       }
@@ -172,7 +195,7 @@ export const EcosystemBackground: React.FC = () => {
         const drawY = (p.y - scrollOffset + h) % h;
 
         ctx.beginPath();
-        ctx.arc(p.x, drawY, p.radius * p.depth, 0, Math.PI * 2);
+        ctx.arc(p.x, drawY, p.radius * p.depth * 1.2, 0, Math.PI * 2);
         
         // Dynamic opacity based on mouse distance
         let finalOpacity = 0.35 * p.depth;
@@ -181,12 +204,18 @@ export const EcosystemBackground: React.FC = () => {
           const dy = drawY - mouseRef.current.y;
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < 150) {
-            finalOpacity = (0.35 + (1 - d / 150) * 0.4) * p.depth;
+            finalOpacity = (0.35 + (1 - d / 150) * 0.55) * p.depth;
           }
         }
 
         ctx.fillStyle = `${p.color}${finalOpacity})`;
+        
+        // Add subtle neon glow to nodes
+        ctx.shadowBlur = 8 * p.depth;
+        ctx.shadowColor = p.color.includes('139') ? '#8b5cf6' : p.color.includes('6') ? '#06b6d4' : '#10b981';
+        
         ctx.fill();
+        ctx.shadowBlur = 0; // Reset for other drawing
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -206,10 +235,10 @@ export const EcosystemBackground: React.FC = () => {
   return (
     <div ref={containerRef} className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-background">
       {/* Mesh/Aurora Gradient Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-axiom-purple/10 blur-[120px] animate-float-slow pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full bg-axiom-cyan/8 blur-[150px] animate-float-medium pointer-events-none" />
-      <div className="absolute top-[35%] right-[10%] w-[45%] h-[45%] rounded-full bg-axiom-purple/5 blur-[120px] animate-float-fast pointer-events-none" />
-      <div className="absolute bottom-[20%] left-[5%] w-[40%] h-[40%] rounded-full bg-axiom-emerald/4 blur-[100px] animate-float-slow pointer-events-none" />
+      <div className="aurora-orb absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-axiom-purple/10 blur-[120px] animate-float-slow pointer-events-none transition-transform duration-300 ease-out" />
+      <div className="aurora-orb absolute bottom-[-15%] right-[-10%] w-[60%] h-[60%] rounded-full bg-axiom-cyan/8 blur-[150px] animate-float-medium pointer-events-none transition-transform duration-300 ease-out" />
+      <div className="aurora-orb absolute top-[35%] right-[10%] w-[45%] h-[45%] rounded-full bg-axiom-purple/5 blur-[120px] animate-float-fast pointer-events-none transition-transform duration-300 ease-out" />
+      <div className="aurora-orb absolute bottom-[20%] left-[5%] w-[40%] h-[40%] rounded-full bg-axiom-emerald/4 blur-[100px] animate-float-slow pointer-events-none transition-transform duration-300 ease-out" />
       
       {/* Living Particle Canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 block" />
